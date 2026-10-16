@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b4853">
+  <meta name="description" content="登録不要・インストール不要。ボトルのアイテムをそろえる泡盛文化の仕分けパズル。">
+  <title>泡盛ボトル仕分けパズル v2 | あわもりラボ</title>
+  <style>
+    :root { color-scheme:light; --ink:#183c44; --muted:#66858b; --deep:#0b4853; --teal:#0b766e; --sand:#fff7e9; --paper:#fffefb; --line:#dce9e5; --coral:#f29e76; --shadow:0 16px 44px #0b485315; --radius:22px; }
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;font-family:ui-rounded,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;color:var(--ink);background:radial-gradient(ellipse at 92% 1%,#d7f3ef 0,transparent 38%),radial-gradient(ellipse at 10% 72%,#fff0d1 0,transparent 38%),#f3f9f6;line-height:1.5}
+    body.dialog-open{overflow:hidden}
+    button{font:inherit;touch-action:manipulation;cursor:pointer}
+    button:focus-visible{outline:3px solid #f4a45f;outline-offset:3px}
+    button:disabled{cursor:not-allowed;opacity:.47}
+    .app{max-width:900px;margin:0 auto;padding:20px 16px 34px}
+    .mast{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--deep);font-weight:900;letter-spacing:.04em;font-size:15px}
+    .brand-symbol{width:37px;height:37px;display:grid;place-items:center;background:var(--deep);color:white;border-radius:13px;font-size:20px;box-shadow:0 5px 0 #082f34}
+    .text-button{border:1px solid #c9e2dc;border-radius:999px;padding:9px 14px;background:#ffffffbc;color:var(--deep);font-weight:800;font-size:13px}
+    .hero{background:linear-gradient(120deg,#094a54,#116f70 66%,#278a7c);border-radius:25px;padding:24px 24px 20px;color:white;box-shadow:0 10px 28px #07575a26;position:relative;overflow:hidden}
+    .hero::after{content:"";position:absolute;right:-30px;top:-50px;width:220px;height:220px;background:radial-gradient(circle at 35% 35%,#ffffff16 0 18%,transparent 19%),radial-gradient(circle at 70% 64%,#ffffff10 0 25%,transparent 26%);border:25px solid #ffffff0a;border-radius:50%;pointer-events:none}
+    .eyebrow{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.14em;border:1px solid #ffffff66;border-radius:20px;padding:4px 10px;margin-bottom:8px}
+    .hero h1{font-size:clamp(23px,4.8vw,35px);letter-spacing:.035em;line-height:1.28;margin:0 0 9px;position:relative;z-index:1}
+    .hero p{font-size:13px;color:#e4fffa;max-width:500px;line-height:1.7;margin:0;position:relative;z-index:1}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}
+    .stat{border:1px solid var(--line);padding:11px 7px;background:#ffffffd9;border-radius:15px;text-align:center}
+    .stat-label{color:var(--muted);font-size:11px;font-weight:800}
+    .stat-value{font-variant-numeric:tabular-nums;font-size:21px;font-weight:900;color:var(--deep);line-height:1.15;margin-top:3px}
+    .stat-value small{font-size:11px;font-weight:700;color:var(--muted)}
+    .game-card{background:var(--paper);border:1px solid #e1eee9;border-radius:var(--radius);padding:19px 16px 16px;box-shadow:var(--shadow)}
+    .section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .section-head h2{font-size:16px;letter-spacing:.03em;margin:0}
+    .section-sub{font-size:12px;color:var(--muted);font-weight:700}
+    .level-track{height:8px;border-radius:12px;background:#e7f1eb;margin-top:12px;overflow:hidden}
+    .level-track span{display:block;height:100%;background:linear-gradient(90deg,#76c6ac,#f3b674);border-radius:12px;transition:width .2s ease}
+    .game-note{margin:16px auto 4px;text-align:center;color:#536d72;font-size:13px;font-weight:700;min-height:20px}
+    .play-counter{margin:16px auto 0;text-align:center;border-radius:14px;background:#e2f5ed;border:1px solid #b4dfd0;padding:10px 8px;color:#0a4a50;font-weight:800;font-size:16px}
+    .play-counter strong{font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums;color:#085f56}
+    .play-counter span{display:block;font-size:12px;color:#526d72}
+    .script-warning{background:#fff1d7;border:1px solid #eecb83;border-radius:12px;padding:12px;margin:12px 0;font-size:13px;line-height:1.8;color:#624914}
+    .preview-bottle{width:54px;height:160px;border:3px solid #9fc9c6;border-radius:9px 9px 18px 18px;display:flex;align-items:center;justify-content:center;line-height:1.9;text-align:center;background:#effdfa;color:#184c4c;font-size:19px}
+    .board-wrap{margin:2px auto 8px;position:relative;min-height:255px;display:grid;place-items:center}
+    .board{width:100%;max-width:300px;display:flex;flex-wrap:wrap;gap:19px 15px;justify-content:center;align-items:flex-end;padding:10px 0 18px;position:relative;z-index:1}
+    
+    .bottle{position:relative;flex:0 0 76px;width:76px;height:194px;border:0;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;transition:transform .15s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+    .bottle:not(:disabled):hover{transform:translateY(-3px)}
+    .bottle:active{transform:translateY(0)}
+    .bottle.selected{transform:translateY(-11px)}
+    .bottle.hint-source .glass{box-shadow:0 0 0 4px #f1b659b3,0 8px 16px #46686f14}
+    .bottle.hint-dest .glass{box-shadow:0 0 0 4px #60c6abbd,0 8px 16px #46686f14}
+    .bottle.selected .glass{border-color:#ef9c5c;box-shadow:0 0 0 4px #f6c69055,0 8px 16px #46686f14}
+    .neck{height:15px;width:52%;border:3px solid #83bcb7;border-bottom:none;border-radius:6px 6px 0 0;background:linear-gradient(90deg,#ebfffc,#d7f1ee88,#ebfffc);position:relative;top:2px;z-index:1}
+    .glass{height:160px;width:92%;border:3px solid #9fc9c6;border-top:5px solid #75aaa8;border-radius:9px 9px 18px 18px;background:linear-gradient(96deg,#ffffffdc 0 10%,#d8f5f13a 20% 85%,#a6dcd55b 96%);display:flex;align-items:flex-end;justify-content:center;position:relative;padding-bottom:5px;box-shadow:0 8px 16px #46686f14;transition:box-shadow .15s,border-color .15s}
+    .glass::after{content:"";position:absolute;top:8px;bottom:20px;left:7px;width:5px;background:#ffffffbd;border-radius:6px;pointer-events:none}
+    .stack{display:flex;flex-direction:column-reverse;align-items:center;gap:1px;width:100%}
+    .piece{width:35px;height:35px;flex:0 0 35px;border-radius:50%;display:grid;place-items:center;border:2px solid #ffffffaa;box-shadow:inset 0 -3px 0 #00000014,0 2px 3px #2644471b;font-size:18px;line-height:1;font-weight:900;position:relative}
+    .piece::after{content:"";position:absolute;left:7px;top:4px;width:8px;height:5px;background:#ffffff63;border-radius:60%}
+    .piece[data-kind="0"]{background:#f5df9f;color:#6d5925}
+    .piece[data-kind="1"]{background:#4b5666;color:#fff3c6}
+    .piece[data-kind="2"]{background:#df8d6b;color:#fff5df}
+    .piece[data-kind="3"]{background:#dda95e;color:#fff5da}
+    .piece[data-kind="4"]{background:linear-gradient(145deg,#614b96,#3c276f);color:#fff;font-size:23px;border-color:#f5d48f;box-shadow:inset 0 -3px 0 #18104140,0 2px 4px #392b5c40}
+    .piece[data-kind="4"]::after{background:#fff5c3bb}
+    .bottle.joker-bottle .glass{border-color:#9481ba}
+    .rival-card{border:1px solid #e8daef;background:#fbf6ff;border-radius:15px;padding:10px 12px;margin:9px 0 3px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .rival-text{font-size:12px;font-weight:800;color:#60417e}
+    .rival-text small{display:block;color:#7c6991;font-size:10px;font-weight:600;margin-top:2px}
+    .rival-badge{background:#684e97;color:white;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:900;white-space:nowrap}
+    .rival-badge.earned{background:#08735c}
+    .special-note{text-align:center;font-size:12px;font-weight:850;color:#66428d;background:#f4edff;border:1px dashed #cdb9e1;border-radius:12px;padding:9px 10px;margin:6px 0 9px}
+    .rules-tag{background:#eee5fa;color:#654590;border-radius:9px;padding:5px 9px;font-weight:900;font-size:11px}
+    .medal{color:#98733d;font-weight:900}
+    .piece.appear{animation:drop .27s cubic-bezier(.19,1.65,.4,1) both}
+    @keyframes drop{from{transform:translateY(-24px) scale(.86)}to{transform:translateY(0) scale(1)}}
+    .bottle-num{font-weight:900;font-size:12px;color:#68878b;margin-top:4px;line-height:1}
+    .bottle.full .bottle-num{color:var(--teal)}
+    .selected .bottle-num{color:#d7783f}
+    .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:6px 0 13px}
+    .legend span{font-size:11px;color:#4e6970;background:#edf6f1;border-radius:9px;padding:5px 9px;font-weight:800}
+    .toolbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .toolbar button{border:1px solid #d6e6df;background:#f3faf7;color:var(--deep);padding:11px 3px;border-radius:13px;font-size:12px;font-weight:900;min-height:43px}
+    .toolbar button.important{background:#e8f7f0;border-color:#b6dfd0}
+    .toolbar button:not(:disabled):active{background:#d5eee3}
+    .hint{padding:8px 10px;background:#ffefcf;border:1px solid #f6ce84;color:#7b5313;border-radius:10px;font-size:12px;font-weight:700;min-height:34px;margin-top:12px;display:none}
+    .hint.show{display:block}
+    .lower{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px}
+    .panel{background:#ffffffcf;border:1px solid var(--line);border-radius:20px;padding:17px;box-shadow:0 6px 16px #164e4a08}
+    .panel-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}
+    .panel h2{font-size:15px;margin:0}
+    .panel-heading button{background:transparent;border:0;color:var(--teal);font-weight:900;font-size:12px;text-decoration:underline}
+    .stage-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .stage-btn{border:1px solid #d6e5df;background:#f7fcf9;border-radius:12px;min-height:48px;font-size:15px;font-weight:900;color:var(--deep);position:relative}
+    .stage-btn.current{background:var(--deep);color:#fff;border-color:var(--deep)}
+    .stage-btn.cleared:not(.current){background:#e3f7ed;color:#146858;border-color:#bde3d3}
+    .stage-btn small{display:block;font-size:9px;font-weight:800;margin-top:1px}
+    .stage-btn:disabled{background:#f0f2f1;color:#87999a;opacity:1}
+    .fact-box{display:flex;align-items:flex-start;gap:12px}
+    .fact-icon{flex:0 0 47px;width:47px;height:47px;display:grid;place-items:center;background:#e5f5ec;border-radius:14px;font-size:26px}
+    .fact-copy{min-width:0;flex:1}
+    .fact-copy strong{display:block;font-size:14px;margin-bottom:3px}
+    .fact-copy p{margin:0;color:#537077;font-size:12px;line-height:1.75}
+    .footer{margin:20px auto 0;text-align:center;font-size:11px;color:#789098;line-height:1.8}
+    .overlay{position:fixed;inset:0;z-index:50;background:#082c37a9;backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:18px}
+    .overlay.active{display:flex}
+    .dialog{width:min(100%,440px);max-height:min(88dvh,740px);overflow-y:auto;background:#fffefb;border-radius:24px;padding:23px;box-shadow:0 28px 70px #001d2670;position:relative}
+    .close{position:absolute;right:17px;top:13px;border:0;background:#eff5f1;border-radius:10px;width:34px;height:34px;color:var(--deep);font-size:19px}
+    .dialog .stamp{font-size:41px;text-align:center;display:block;margin:3px auto 2px}
+    .dialog h2{text-align:center;font-size:23px;margin:5px 0 8px;color:var(--deep)}
+    .dialog .lead{text-align:center;color:#56737a;font-size:13px;line-height:1.8;margin:0 0 16px}
+    .fact-reveal{background:#f1f9f4;border:1px solid #cfecdd;padding:14px;border-radius:15px;margin:10px 0 16px}
+    .fact-reveal .tag{display:block;color:#167b62;font-size:10px;font-weight:900;letter-spacing:.13em;margin-bottom:3px}
+    .fact-reveal h3{font-size:15px;margin:2px 0 5px}
+    .fact-reveal p{font-size:13px;color:#466a6c;line-height:1.8;margin:0}
+    .primary{background:var(--deep);color:white;border:0;border-radius:13px;padding:13px 16px;font-weight:900;width:100%;font-size:14px}
+    .secondary{background:#edf7f2;color:var(--deep);border:1px solid #cfe9dc;border-radius:13px;padding:11px 15px;font-weight:900;width:100%;font-size:13px;margin-top:8px}
+    .help-list{padding-left:22px;font-size:13px;color:#496770;line-height:1.9;margin:10px 0 17px}
+    .help-list li+li{margin-top:6px}
+    .notice{font-size:11px;color:#6f8a8f;line-height:1.7}
+    .collection{display:grid;grid-template-columns:1fr;gap:9px;margin:14px 0 0}
+    .collection-card{border:1px solid #dfebe5;border-radius:12px;padding:11px 12px;background:#f9fcfa}
+    .collection-card.locked{color:#98a5a5;background:#f6f7f5}
+    .collection-card h3{font-size:13px;margin:0 0 4px}
+    .collection-card p{font-size:12px;margin:0;color:#58747a;line-height:1.6}
+    .collection-card.locked p{color:#9badae}
+    .shake{animation:shake .24s linear}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}50%{transform:translateX(4px)}80%{transform:translateX(-2px)}}
+    @media(min-width:670px){.app{padding:26px 24px 50px}.hero{padding:27px 30px}.board{max-width:670px;gap:13px}.bottle{flex-basis:79px;width:79px}.lower{grid-template-columns:1fr 1fr;align-items:start}.game-card{padding:23px 28px}.board-wrap{min-height:245px}.stage-grid{gap:8px}}
+    @media(max-width:355px){.app{padding:12px 9px 22px}.game-card{padding:14px 7px}.board{max-width:285px;gap:15px 11px}.bottle{flex-basis:68px;width:68px}.glass{width:93%}.piece{width:32px;height:32px;flex-basis:32px;font-size:16px}.glass{height:148px}.bottle{height:180px}.hero{padding:19px 17px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="mast">
+    <div class="brand"><span class="brand-symbol" aria-hidden="true">🏺</span><span>あわもりラボ <small style="display:block;font-size:10px;color:#709296;letter-spacing:.08em">AWAMORI GAME LAB</small></span></div>
+    <button type="button" class="text-button" id="helpButton">？ 遊び方</button>
+  </header>
+  <section class="hero" aria-label="ゲームタイトル">
+    <span class="eyebrow">無料・登録なし・スマホ対応</span>
+    <h1>泡盛ボトル<br>仕分けパズル</h1>
+    <p>同じマークを1本に集めよう。ステージ4から「くろまい君ジョーカー」登場！ ゆる泡くんの目標手数にも挑戦。</p>
+  </section>
+  <div class="stats" aria-live="polite">
+    <div class="stat"><div class="stat-label">ステージ</div><div class="stat-value" id="levelText">01 <small>/ 10</small></div></div>
+    <div class="stat"><div class="stat-label">現在の手数</div><div class="stat-value" id="movesText">0 <small>回</small></div></div>
+    <div class="stat"><div class="stat-label">自己ベスト</div><div class="stat-value" id="bestText">—</div></div>
+  </div>
+  <main class="game-card" id="game">
+    <div class="section-head"><h2 id="stageTitle">ステージ 01：はじめの一歩</h2><span class="section-sub" id="progressText">0 / 10 クリア</span></div>
+    <div class="level-track" aria-hidden="true"><span id="progressBar" style="width:0"></span></div>
+    <div class="game-note" id="statusText" aria-live="polite">移動させたいボトルをタップ！</div>
+    <div class="rival-card" aria-label="ゆる泡くんの挑戦"><div class="rival-text">🏆 ゆる泡くんの挑戦<small>目標以内なら「名人メダル」。通常クリアは何手でもOK！</small></div><span class="rival-badge" id="rivalBadge">7手以内</span></div>
+    <div class="special-note" id="specialNote" hidden>★ くろまい君ジョーカー：どのマークの上にも置ける。4個揃えるとき、足りない1個の代わりに使おう！</div>
+    <div class="play-counter" aria-live="polite">現在 <strong id="movesInline">0</strong> 手 <span id="remainingInline">／ ゆる泡くんの目標：7手以内</span></div>
+    <div class="board-wrap"><div class="board" id="board" aria-label="ボトル仕分けゲーム盤">
+    <div class="preview-bottle">🌾<br>✦<br>✦<br>✦</div><div class="preview-bottle">🌾<br>🏺<br>✦<br>🌾</div><div class="preview-bottle">🌾<br>🌾<br>🏺<br>🏺</div><div class="preview-bottle">空</div><div class="preview-bottle">空</div>
+    </div></div>
+    <div id="scriptWarning" class="script-warning">ゲームの読み込みが止まっています。ChatGPTのファイルプレビューではJavaScriptを実行できない場合があります。Safariで遊ぶには、GitHub Pagesなどに公開したURLから開いてください。</div>
+    <div class="legend" id="legend" aria-label="アイテムの種類"></div>
+    <div class="toolbar">
+      <button type="button" id="undoButton">↶ 1手戻す</button>
+      <button type="button" id="resetButton">⟳ やり直す</button>
+      <button type="button" class="important" id="hintButton">✧ ヒント</button>
+    </div>
+    <div class="hint" id="hintText" role="status"></div>
+  </main>
+  <div class="lower">
+    <section class="panel">
+      <div class="panel-heading"><h2>🏝️ ステージを選ぶ</h2><span style="font-size:11px;color:#7f9294">クリアすると解放</span></div>
+      <div class="stage-grid" id="stageGrid"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-heading"><h2>📖 あわもり豆知識図鑑</h2><button type="button" id="collectionButton">図鑑をひらく →</button></div>
+      <div class="fact-box"><div class="fact-icon" id="factIcon">🔒</div><div class="fact-copy"><strong id="factTitle">まだ秘密です</strong><p id="factDescription">ステージをクリアすると、泡盛にまつわる豆知識が解放されます。</p></div></div>
+    </section>
+  </div>
+  <footer class="footer">このゲームは沖縄の泡盛文化を題材とした学習・娯楽用コンテンツです。飲酒を勧めるものではありません。<br>プレイ記録はこのブラウザー内に保存されます。外部送信は行いません。</footer>
+</div>
+<div class="overlay" id="overlay" aria-hidden="true"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" id="dialog"><button type="button" class="close" id="closeDialog" aria-label="閉じる">×</button><div id="dialogContent"></div></section></div>
+<script>
+(() => {
+  'use strict';
+  const CAP = 4;
+  const STORE = 'awamori-bottle-sort-v2';
+  const OLD_STORE = 'awamori-bottle-sort-v1';
+  const WILD = 4;
+  const KINDS = [
+    {name:'タイ米', symbol:'🌾'},
+    {name:'黒麹', symbol:'✦'},
+    {name:'からから', symbol:'🏺'},
+    {name:'古酒', symbol:'⌛'},
+    {name:'くろまい君ジョーカー', symbol:'★'}
+  ];
+  // 各問題は下から上へ記載。全10面、解けることを事前検証済み。
+  const LEVELS = [
+    {name:'はじめの一歩',b:[[1,1,1,2],[0,1,2,2],[2,0,0,0],[],[]]},
+    {name:'ならべる楽しさ',b:[[0,0,1,1],[1,2,2,0],[2,2,1,0],[],[]]},
+    {name:'ひと工夫',b:[[2,0,2,0],[0,1,1,0],[1,2,2,1],[],[]]},
+    {name:'新しい仲間',b:[[0,2,1,2],[1,0,1,1],[3,2,0,0],[2,3,3,3],[],[]]},
+    {name:'じっくり考える',b:[[0,0,3,3],[1,2,3,2],[3,1,2,1],[2,0,1,0],[],[]]},
+    {name:'空き瓶がカギ',b:[[0,3,0,0],[1,3,2,3],[1,0,2,3],[2,1,1,2],[],[]]},
+    {name:'並べ替え名人',b:[[0,0,1,3],[3,1,2,1],[2,0,1,2],[3,2,0,3],[],[]]},
+    {name:'沖縄のひらめき',b:[[0,3,3,2],[2,0,1,3],[2,0,3,0],[1,2,1,1],[],[]]},
+    {name:'最後まであきらめず',b:[[2,0,1,1],[2,3,1,3],[3,0,2,0],[2,3,0,1],[],[]]},
+    {name:'泡盛パズル名人',b:[[2,0,3,1],[3,1,0,1],[1,3,0,2],[2,0,3,2],[],[]]}
+  ];
+  // ステージ4・6・8・10で最上段の駒を「くろまい君」に置換。
+  // 各ステージの構成を解探索で検証してあり、通常手順で全てクリアできる。
+  const JOKER_LEVELS = [3,5,7,9];
+  JOKER_LEVELS.forEach(i=>{LEVELS[i].b[0][3]=WILD;});
+  // 任意のチャレンジ：通常クリアは手数制限なし。
+  const RIVAL_GOALS = [7,8,10,12,13,16,15,14,15,16];
+  const FACTS = [
+    {icon:'🌾',title:'泡盛とタイ米',desc:'泡盛の原料米には、主にタイ米（インディカ米）が使われています。沖縄のお酒と海外の米の組み合わせが特徴の一つです。'},
+    {icon:'✦',title:'黒麹菌の働き',desc:'泡盛造りには黒麹菌を利用します。麹がつくるクエン酸は、暑い地域でのもろみの雑菌汚染を抑えるのに役立ちます。'},
+    {icon:'🍚',title:'「全麹仕込み」って？',desc:'泡盛は、原料米をすべて米麹にして仕込む「全麹仕込み」が特徴です。日本酒の造り方とは異なるポイントです。'},
+    {icon:'⚗️',title:'蒸留するお酒',desc:'泡盛は発酵させたもろみを蒸留して造る「蒸留酒」。蒸留により、アルコールなどの成分を取り出します。'},
+    {icon:'🏺',title:'「からから」は酒器',desc:'「からから」は沖縄で泡盛を注ぐために使われてきた酒器の一つ。独特な形のものがあります。'},
+    {icon:'🥃',title:'小さな盃「ちぶぐゎー」',desc:'「ちぶぐゎー」は沖縄の小さな盃を指す言葉。泡盛に関わる酒器にも、地域ならではの文化があります。'},
+    {icon:'⌛',title:'「古酒（クース）」とは',desc:'「古酒（クース）」は泡盛を長く貯蔵・熟成したもの。現在、商品表示の「古酒」には、原則として全量が3年以上貯蔵された泡盛という基準があります。'},
+    {icon:'🔄',title:'古酒をつなぐ「仕次ぎ」',desc:'仕次ぎは、古酒を使った分だけ、より若い酒を補うなどして甕を守り育てる伝統的な方法です。'},
+    {icon:'🏝️',title:'泡盛と沖縄',desc:'泡盛は沖縄の歴史や暮らしと深く結び付いた蒸留酒です。酒器や行事にも、その文化が息づいています。'},
+    {icon:'📜',title:'琉球王国から現代へ',desc:'泡盛は琉球王国の時代から受け継がれてきたお酒。現在も沖縄各地の蔵元が、地域の伝統と技術を伝えています。'}
+  ];
+  const $ = s => document.querySelector(s);
+  const clone = b => b.map(v => [...v]);
+  const initialState = () => ({level:0,unlocked:1,cleared:[],medals:[],best:{},board:clone(LEVELS[0].b),moves:0,history:[]});
+  const validBoard = (board, level) => {
+    if (!Array.isArray(board)||board.length!==LEVELS[level].b.length)return false;
+    if (!board.every(b=>Array.isArray(b)&&b.length<=CAP&&b.every(n=>Number.isInteger(n)&&n>=0&&n<=WILD)))return false;
+    const expected=[0,0,0,0,0],actual=[0,0,0,0,0];
+    LEVELS[level].b.flat().forEach(v=>expected[v]++);
+    board.flat().forEach(v=>actual[v]++);
+    return expected.every((v,i)=>v===actual[i]);
+  };
+  function readSave(){
+    try {
+      const old = !localStorage.getItem(STORE);
+      const raw = JSON.parse(localStorage.getItem(old?OLD_STORE:STORE));
+      if(!raw||!Number.isInteger(raw.level)||raw.level<0||raw.level>=LEVELS.length)return initialState();
+      const unlocked=Number.isInteger(raw.unlocked)?Math.max(1,Math.min(LEVELS.length,raw.unlocked)):1;
+      const level=Math.min(raw.level,unlocked-1);
+      const cleared=Array.isArray(raw.cleared)?[...new Set(raw.cleared.filter(i=>Number.isInteger(i)&&i>=0&&i<LEVELS.length))]:[];
+      const medals=!old&&Array.isArray(raw.medals)?[...new Set(raw.medals.filter(i=>Number.isInteger(i)&&i>=0&&i<LEVELS.length))]:[];
+      const best=(raw.best&&typeof raw.best==='object')?{...raw.best}:{};
+      // v1から引継ぎ：ジョーカー導入面は異なるため盤面とベストを再設定。
+      if(old)JOKER_LEVELS.forEach(i=>{delete best[i];});
+      const board=validBoard(raw.board,level)?clone(raw.board):clone(LEVELS[level].b);
+      const continuing=!old||!JOKER_LEVELS.includes(level);
+      const history=continuing&&Array.isArray(raw.history)?raw.history.filter(b=>validBoard(b,level)).slice(-150):[];
+      const moves=continuing&&validBoard(raw.board,level)?Math.max(0,Math.min(5000,Number(raw.moves)||0)):0;
+      return {level,unlocked,cleared,medals,best,board,moves,history};
+    }catch(_){return initialState();}
+  }
+  let state=readSave();
+  let selected=null;
+  let hinted=null;
+  let revealNewest=-1;
+  let toastTimer=null;
+  let dialogAction=null;
+  const overlay=$('#overlay');
+  function save(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch(_){/* ブラウザーの保存禁止時もゲーム本体は動く */}}
+  const topColor=b=>b[b.length-1];
+  const solved=b=>b.every(a=>!a.length||(a.length===CAP&&new Set(a.filter(v=>v!==WILD)).size<=1));
+  const currentColors=()=>state.level<3?3:4;
+  function legalMove(board,i,j){
+    if(i===j||!board[i]?.length||!board[j]||board[j].length>=CAP)return 0;
+    const s=board[i], t=board[j],c=topColor(s);
+    if(t.length&&c!==WILD&&topColor(t)!==c&&topColor(t)!==WILD)return 0;
+    let k=0; for(let n=s.length-1;n>=0&&s[n]===c;n--)k++;
+    // ジョーカーは必ず一個ずつ移動させる。
+    return Math.min(k,CAP-t.length);
+  }
+  function applyMove(board,i,j){const count=legalMove(board,i,j);if(!count)return null;const out=clone(board);for(let k=0;k<count;k++)out[j].push(out[i].pop());return out;}
+  function setStatus(s){$('#statusText').textContent=s;}
+  function showHint(text){const h=$('#hintText');h.textContent=text;h.classList.add('show');}
+  function clearHint(){const h=$('#hintText');h.classList.remove('show');hinted=null;}
+  function render(){
+    $('#levelText').innerHTML=String(state.level+1).padStart(2,'0')+' <small>/ '+LEVELS.length+'</small>';
+    $('#movesText').innerHTML=state.moves+' <small>手</small>';
+    $('#movesInline').textContent=state.moves;
+    $('#remainingInline').textContent='／ ゆる泡くんの目標：'+RIVAL_GOALS[state.level]+'手以内'+(state.moves>RIVAL_GOALS[state.level]?'（通常クリア可能）':'');
+    $('#bestText').innerHTML=state.best[state.level]===undefined?'—':state.best[state.level]+' <small>回</small>';
+    $('#stageTitle').textContent='ステージ '+String(state.level+1).padStart(2,'0')+'：'+LEVELS[state.level].name;
+    $('#progressText').textContent=state.cleared.length+' / '+LEVELS.length+' クリア';
+    $('#progressBar').style.width=100*state.cleared.length/LEVELS.length+'%';
+    $('#undoButton').disabled=!state.history.length;
+    const board=$('#board');board.innerHTML='';
+    state.board.forEach((chips,i)=>{
+      const button=document.createElement('button');button.type='button';button.className='bottle';button.dataset.index=i;
+      if(i===selected)button.classList.add('selected');
+      if(hinted&&hinted[0]===i)button.classList.add('hint-source');
+      if(hinted&&hinted[1]===i)button.classList.add('hint-dest');
+      if(chips.length===CAP&&new Set(chips.filter(v=>v!==WILD)).size<=1)button.classList.add('full');
+      if(chips.includes(WILD))button.classList.add('joker-bottle');
+      button.setAttribute('aria-pressed',String(i===selected));
+      button.setAttribute('aria-label','ボトル'+(i+1)+'。'+(chips.length?('下から'+chips.map(c=>KINDS[c].name).join('、')):'空っぽ'));
+      const neck=document.createElement('span');neck.className='neck';neck.setAttribute('aria-hidden','true');
+      const glass=document.createElement('span');glass.className='glass';glass.setAttribute('aria-hidden','true');
+      const stack=document.createElement('span');stack.className='stack';
+      chips.forEach((kind,p)=>{const piece=document.createElement('span');piece.className='piece';if(i===revealNewest&&p>=chips.length-(state.lastPour||1))piece.classList.add('appear');piece.dataset.kind=kind;piece.textContent=KINDS[kind].symbol;stack.appendChild(piece);});
+      glass.appendChild(stack);
+      const num=document.createElement('span');num.className='bottle-num';num.textContent=String(i+1).padStart(2,'0');
+      button.append(neck,glass,num);button.addEventListener('click',()=>tap(i));board.appendChild(button);
+    });
+    $('#legend').innerHTML=KINDS.slice(0,currentColors()).map(k=>'<span>'+k.symbol+' '+k.name+'</span>').join('')+
+      (JOKER_LEVELS.includes(state.level)?'<span class="rules-tag">★ くろまい君ジョーカー</span>':'');
+    $('#specialNote').hidden=!JOKER_LEVELS.includes(state.level);
+    const medal=state.medals.includes(state.level);
+    $('#rivalBadge').textContent=medal?'🏅 メダル獲得済':RIVAL_GOALS[state.level]+'手以内';
+    $('#rivalBadge').classList.toggle('earned',medal);
+    $('#stageGrid').innerHTML='';
+    LEVELS.forEach((lev,i)=>{
+      const b=document.createElement('button');b.type='button';b.className='stage-btn';
+      b.disabled=i>=state.unlocked;
+      if(i===state.level)b.classList.add('current');
+      if(state.cleared.includes(i))b.classList.add('cleared');
+      b.innerHTML=String(i+1).padStart(2,'0')+'<small>'+(i>=state.unlocked?'🔒':state.medals.includes(i)?'🏅 MEDAL':state.cleared.includes(i)?'✓ CLEAR':'PLAY')+'</small>';
+      b.setAttribute('aria-label','ステージ'+(i+1)+(i>=state.unlocked?'・未解放':state.cleared.includes(i)?'・クリア済み':''));
+      b.addEventListener('click',()=>loadLevel(i));$('#stageGrid').appendChild(b);
+    });
+    const found=state.cleared.length?Math.max(...state.cleared):-1;
+    $('#factIcon').textContent=found>=0?FACTS[found].icon:'🔒';
+    $('#factTitle').textContent=found>=0?FACTS[found].title:'まだ秘密です';
+    $('#factDescription').textContent=found>=0?FACTS[found].desc:'ステージをクリアすると、泡盛にまつわる豆知識が解放されます。';
+    revealNewest=-1;
+  }
+  function tap(i){
+    clearHint();
+    const b=state.board;
+    if(selected===null){
+      if(!b[i].length){setStatus('中身のあるボトルを選んでね。');return;}
+      selected=i;setStatus('移動先のボトルをタップ！');render();return;
+    }
+    if(selected===i){selected=null;setStatus('移動させたいボトルをタップ！');render();return;}
+    const count=legalMove(b,selected,i);
+    if(!count){
+      if(b[i].length){selected=i;setStatus('移動先は、空のボトルか同じマークの上だけ。');render();}
+      else{setStatus('そこへは移動できません。');}
+      return;
+    }
+    state.history.push(clone(b));
+    if(state.history.length>150)state.history.shift();
+    const next=applyMove(b,selected,i);state.board=next;state.moves++;state.lastPour=count;
+    selected=null;revealNewest=i;save();render();
+    if(solved(next)){win();}else{setStatus(count>1?count+'個まとめて移動！ 同じマークを揃えよう。':'いい調子！ 同じマークを揃えよう。');}
+  }
+  function loadLevel(i){if(i>=state.unlocked)return;state.level=i;state.board=clone(LEVELS[i].b);state.moves=0;state.history=[];state.lastPour=0;selected=null;clearHint();setStatus(JOKER_LEVELS.includes(i)?'★ くろまい君ジョーカー登場！足りないマークに活用しよう。':'移動させたいボトルをタップ！');save();render();}
+  function undo(){if(!state.history.length)return;state.board=state.history.pop();state.moves=Math.max(0,state.moves-1);selected=null;clearHint();setStatus('1手戻しました。');save();render();}
+  function reset(){if(!state.moves&&!state.history.length){setStatus('このステージは最初の状態です。');return;}loadLevel(state.level);setStatus('最初からやり直します。');}
+  // 空のボトル同士を同一視する幅優先探索。ヒントには最短手数の解の初手を使用。
+  function findHint(start){
+    const canonical=b=>b.map(a=>a.join('')).sort().join('|');
+    let queue=[{b:clone(start),first:null}];let head=0;const seen=new Set([canonical(start)]);
+    while(head<queue.length&&seen.size<100000){
+      const item=queue[head++],b=item.b;
+      if(solved(b))return item.first;
+      for(let i=0;i<b.length;i++){
+        const s=b[i];if(!s.length||s.length===CAP&&s.every(x=>x===s[0]))continue;
+        const usedTargets=new Set();
+        for(let j=0;j<b.length;j++){
+          const count=legalMove(b,i,j);if(!count)continue;
+          if(!b[j].length&&s.every(x=>x===s[0])&&s[0]!==WILD)continue;
+          const sig=b[j].join('');if(usedTargets.has(sig))continue;usedTargets.add(sig);
+          const next=applyMove(b,i,j),key=canonical(next);
+          if(seen.has(key))continue;
+          seen.add(key);queue.push({b:next,first:item.first||[i,j]});
+        }
+      }
+    }
+    return null;
+  }
+  function hint(){
+    if(solved(state.board)){showHint('このステージはクリア済みです。');return;}
+    const move=findHint(state.board);
+    if(!move){showHint('この配置でクリアできる手が見つかりません。1手戻すか、やり直してみましょう。');return;}
+    selected=null;hinted=move;render();showHint('ヒント：'+(move[0]+1)+'番 → '+(move[1]+1)+'番 の順にタップ！');setStatus('光っている2本を順にタップしてみよう。');
+  }
+  function openDialog(html){$('#dialogContent').innerHTML=html;overlay.classList.add('active');overlay.setAttribute('aria-hidden','false');document.body.classList.add('dialog-open');$('#closeDialog').focus();}
+  function closeDialog(){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true');document.body.classList.remove('dialog-open');dialogAction=null;}
+  function win(){
+    const index=state.level;
+    if(!state.cleared.includes(index))state.cleared.push(index);
+    state.unlocked=Math.min(LEVELS.length,Math.max(state.unlocked,index+2));
+    const record=state.best[index];const isRecord=record===undefined||state.moves<record;
+    const earnedMedal=state.moves<=RIVAL_GOALS[index];const newMedal=earnedMedal&&!state.medals.includes(index);
+    if(earnedMedal)state.medals.push(index);
+    if(isRecord)state.best[index]=state.moves;
+    state.cleared.sort((a,b)=>a-b);save();render();setStatus('ステージクリア！ 豆知識を獲得しました。');
+    const fact=FACTS[index],final=index===LEVELS.length-1;
+    openDialog('<span class="stamp">'+(newMedal?'🏅':'🎉')+'</span><h2 id="dialogTitle">'+(final?'全ステージ制覇！':'ステージクリア！')+'</h2><p class="lead">'+(index+1)+'面クリア ・ '+state.moves+'手で完成'+(isRecord?'<br><strong>自己ベスト更新！</strong>':'')+(earnedMedal?'<br><strong>ゆる泡くんの目標達成！ 🏅</strong>':'<br>ゆる泡くんの目標は'+RIVAL_GOALS[index]+'手以内。何手でもクリアはOK！')+'</p><div class="fact-reveal"><span class="tag">あわもり豆知識 '+String(index+1).padStart(2,'0')+'</span><h3>'+fact.icon+' '+fact.title+'</h3><p>'+fact.desc+'</p></div><button class="primary" id="nextStage">'+(final?'もう一度、最初から遊ぶ':'次のステージへ →')+'</button><button class="secondary" id="stayStage">この画面を閉じる</button>');
+    $('#nextStage').addEventListener('click',()=>{closeDialog();loadLevel(final?0:index+1);window.scrollTo({top:0,behavior:'smooth'});});
+    $('#stayStage').addEventListener('click',closeDialog);
+  }
+  function help(){openDialog('<span class="stamp">🧩</span><h2 id="dialogTitle">遊び方</h2><p class="lead">ボトルのマークを、種類ごとに仕分けよう！</p><ol class="help-list"><li><strong>中身のあるボトル</strong>をタップして選択。</li><li><strong>空のボトル</strong>、または<strong>同じマークが一番上にあるボトル</strong>をタップすると移動できます。</li><li>ボトルは<strong>1本につき4個</strong>まで。同じマークが連続していれば、まとめて移せます。</li><li>すべてのマークを種類ごとに揃えるとクリア。泡盛の豆知識が増えます。</li><li><strong>ステージ4・6・8・10</strong>は「★ くろまい君ジョーカー」が登場。どのマークの上にも置け、3個揃ったマークの不足分を補えます。ジョーカーは1個ずつ移動します。</li><li><strong>ゆる泡くんの挑戦</strong>：目標手数以内でクリアするとメダル獲得。達成できなくても通常クリアできます。</li></ol><div class="fact-reveal"><p>「1手戻す」「やり直す」「ヒント」は自由に使えます。スコアと進捗はこの端末のブラウザー内に保存します。★は仮の表示で、オリジナルキャラクター画像への差し替えを想定しています。</p></div><button class="primary" id="helpClose">遊んでみる</button>');$('#helpClose').addEventListener('click',closeDialog);}
+  function collection(){const html=FACTS.map((f,i)=>{const unlocked=state.cleared.includes(i);return '<article class="collection-card'+(unlocked?'':' locked')+'"><h3>'+(unlocked?f.icon:'🔒')+' '+(i+1)+'. '+(unlocked?f.title:'？？？')+'</h3><p>'+(unlocked?f.desc:'ステージ'+(i+1)+'をクリアすると解放されます。')+'</p></article>';}).join('');openDialog('<span class="stamp">📖</span><h2 id="dialogTitle">あわもり豆知識図鑑</h2><p class="lead">'+state.cleared.length+' / '+FACTS.length+' 個の豆知識を発見！</p><div class="collection">'+html+'</div><button class="secondary" id="collectionClose" style="margin-top:15px">閉じる</button>');$('#collectionClose').addEventListener('click',closeDialog);}
+  $('#helpButton').addEventListener('click',help);
+  $('#collectionButton').addEventListener('click',collection);
+  $('#undoButton').addEventListener('click',undo);
+  $('#resetButton').addEventListener('click',reset);
+  $('#hintButton').addEventListener('click',hint);
+  $('#closeDialog').addEventListener('click',closeDialog);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeDialog();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('active'))closeDialog();});
+  $('#scriptWarning').hidden=true;
+  render();save();
+  if(solved(state.board)&&state.cleared.includes(state.level)){setStatus('クリア済みです。次のステージを選んでください。');}
+})();
+</script>
+</body>
+</html>
