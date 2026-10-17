@@ -221,6 +221,7 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
 .rival-badge.earned{background:#dff5af;color:#34551c;border:1px solid #a6ca6a}
 /* Completed bottles: soft pink interior, not an active control indication. */
 .bottle.full .glass{background:linear-gradient(100deg,#fff5f8 0%,#ffe4ee 52%,#ffd8e7 100%)}
+.bottle.full .glass::after{background:linear-gradient(180deg,#ffeaf1 0%,#ffe0ea 100%)}
 /* Keep selected red and enemy lock gold visible over completed color. */
 .bottle.selected .glass{border:5px solid #ec2333;box-shadow:0 0 0 5px #ec2333,0 8px 18px #ec233355}
 .bottle.enemy-locked .glass{outline:7px solid #e5b029;outline-offset:2px;box-shadow:0 0 0 10px #ffdf8e88}
