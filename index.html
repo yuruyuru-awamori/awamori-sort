@@ -225,6 +225,14 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
 /* Keep selected red and enemy lock gold visible over completed color. */
 .bottle.selected .glass{border:5px solid #ec2333;box-shadow:0 0 0 5px #ec2333,0 8px 18px #ec233355}
 .bottle.enemy-locked .glass{outline:7px solid #e5b029;outline-offset:2px;box-shadow:0 0 0 10px #ffdf8e88}
+
+/* v3.5: account-free manual backup and restore */
+.backup-section{margin-top:18px;padding:15px;background:#f2f7f5;border:1px solid #d0e5dc;border-radius:15px}
+.backup-section h3{margin:0 0 8px;font-size:1.2em;color:#184f50}
+.backup-section p{margin:6px 0 12px;line-height:1.65}
+.backup-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.backup-buttons button{min-width:0;padding:10px 4px;font-size:inherit}
+.backup-note{font-size:.86em;color:#445f60}
 </style>
 </head>
 <body>
@@ -371,23 +379,24 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
     board.flat().forEach(v=>actual[v]++);
     return expected.every((v,i)=>v===actual[i]);
   };
+  function normalizeSave(raw,old=false){
+    if(!raw||!Number.isInteger(raw.level)||raw.level<0||raw.level>=LEVELS.length)return initialState();
+    const unlocked=Number.isInteger(raw.unlocked)?Math.max(raw.cleared?.includes(9)?11:1,Math.min(LEVELS.length,raw.unlocked)):1;
+    const level=Math.min(raw.level,unlocked-1);
+    const cleared=Array.isArray(raw.cleared)?[...new Set(raw.cleared.filter(i=>Number.isInteger(i)&&i>=0&&i<LEVELS.length))]:[];
+    const medals=!old&&Array.isArray(raw.medals)?[...new Set(raw.medals.filter(i=>Number.isInteger(i)&&i>=0&&i<LEVELS.length))]:[];
+    const best=(raw.best&&typeof raw.best==='object'&&!Array.isArray(raw.best))?Object.fromEntries(Object.entries(raw.best).filter(([k,v])=>/^(?:[0-9]|1[0-9]|20)$/.test(k)&&Number.isInteger(v)&&v>=0&&v<=5000)):{};
+    if(old)JOKER_LEVELS.forEach(i=>{delete best[i];});
+    const board=validBoard(raw.board,level)?clone(raw.board):clone(LEVELS[level].b);
+    const continuing=!old||!JOKER_LEVELS.includes(level);
+    const history=continuing&&Array.isArray(raw.history)?raw.history.filter(b=>validBoard(Array.isArray(b)?b:b?.board,level)).slice(-150):[];
+    const moves=continuing&&validBoard(raw.board,level)?Math.max(0,Math.min(5000,Number(raw.moves)||0)):0;
+    return {level,unlocked,cleared,medals,best,board,moves,history,nickname:typeof raw.nickname==='string'?raw.nickname.slice(0,16):'ゲスト',lockIndex:level>=10&&Number.isInteger(raw.lockIndex)&&raw.lockIndex<board.length?raw.lockIndex:-1,lockRemaining:level>=10?Math.max(0,Math.min(20,Number(raw.lockRemaining)||0)):0,enemyTick:Math.max(0,Math.min(10000,Number(raw.enemyTick)||0))};
+  }
   function readSave(){
-    try {
-      const old = !localStorage.getItem(STORE);
-      const raw = JSON.parse(localStorage.getItem(old?OLD_STORE:STORE));
-      if(!raw||!Number.isInteger(raw.level)||raw.level<0||raw.level>=LEVELS.length)return initialState();
-      const unlocked=Number.isInteger(raw.unlocked)?Math.max(raw.cleared?.includes(9)?11:1,Math.min(LEVELS.length,raw.unlocked)):1;
-      const level=Math.min(raw.level,unlocked-1);
-      const cleared=Array.isArray(raw.cleared)?[...new Set(raw.cleared.filter(i=>Number.isInteger(i)&&i>=0&&i<LEVELS.length))]:[];
-      const medals=!old&&Array.isArray(raw.medals)?[...new Set(raw.medals.filter(i=>Number.isInteger(i)&&i>=0&&i<LEVELS.length))]:[];
-      const best=(raw.best&&typeof raw.best==='object')?{...raw.best}:{};
-      // v1から引継ぎ：ジョーカー導入面は異なるため盤面とベストを再設定。
-      if(old)JOKER_LEVELS.forEach(i=>{delete best[i];});
-      const board=validBoard(raw.board,level)?clone(raw.board):clone(LEVELS[level].b);
-      const continuing=!old||!JOKER_LEVELS.includes(level);
-      const history=continuing&&Array.isArray(raw.history)?raw.history.filter(b=>validBoard(Array.isArray(b)?b:b?.board,level)).slice(-150):[];
-      const moves=continuing&&validBoard(raw.board,level)?Math.max(0,Math.min(5000,Number(raw.moves)||0)):0;
-      return {level,unlocked,cleared,medals,best,board,moves,history,nickname:typeof raw.nickname==="string"?raw.nickname.slice(0,16):"ゲスト",lockIndex:level>=10&&Number.isInteger(raw.lockIndex)?raw.lockIndex:-1,lockRemaining:level>=10?Math.max(0,Number(raw.lockRemaining)||0):0,enemyTick:Math.max(0,Number(raw.enemyTick)||0)};
+    try{
+      const old=!localStorage.getItem(STORE);
+      return normalizeSave(JSON.parse(localStorage.getItem(old?OLD_STORE:STORE)),old);
     }catch(_){return initialState();}
   }
   let state=readSave();
@@ -571,9 +580,50 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
   function collection(){const html=FACTS.map((f,i)=>{const unlocked=state.cleared.includes(i);return '<article class="collection-card'+(unlocked?'':' locked')+'"><h3>'+(unlocked?f.icon:'🔒')+' '+(i+1)+'. '+(unlocked?f.title:'？？？')+'</h3><p>'+(unlocked?f.desc:'ステージ'+(i+1)+'をクリアすると解放されます。')+'</p></article>';}).join('');openDialog('<span class="stamp">📖</span><h2 id="dialogTitle">あわもり豆知識図鑑</h2><p class="lead">'+state.cleared.length+' / '+FACTS.length+' 個の豆知識を発見！</p><div class="collection">'+html+'</div><button class="secondary" id="collectionClose" style="margin-top:15px">閉じる</button>');$('#collectionClose').addEventListener('click',closeDialog);}
   function profile(){
     const total=state.cleared.filter(i=>i<20).length;
-    openDialog('<span class="stamp">🏆</span><h2 id="dialogTitle">プレイヤーステータス</h2><p class="lead">ログイン・アカウント登録は必要ありません。</p><label for="nicknameInput"><strong>ニックネーム（16文字以内）</strong></label><input class="nickname-input" id="nicknameInput" maxlength="16" autocomplete="off" placeholder="ゲスト"><div class="fact-reveal"><p>通常クリア：'+total+'/20<br>メダル：'+state.medals.length+'個<br>ステージ20最少手数：'+(state.best[19]===undefined?'未記録':state.best[19]+'手')+'<br>秘密ステージ：'+(secretEligible()?'解放済み':'未解放')+'</p></div><button class="primary" id="saveName">ニックネームを保存</button>');
+    openDialog('<span class="stamp">🏆</span><h2 id="dialogTitle">プレイヤーステータス</h2><p class="lead">ログイン・アカウント登録は必要ありません。</p><label for="nicknameInput"><strong>ニックネーム（16文字以内）</strong></label><input class="nickname-input" id="nicknameInput" maxlength="16" autocomplete="off" placeholder="ゲスト"><div class="fact-reveal"><p>通常クリア：'+total+'/20<br>メダル：'+state.medals.length+'個<br>ステージ20最少手数：'+(state.best[19]===undefined?'未記録':state.best[19]+'手')+'<br>秘密ステージ：'+(secretEligible()?'解放済み':'未解放')+'</p></div><button class="primary" id="saveName">ニックネームを保存</button><div class="backup-section"><h3>機種変更・プレイ記録の引き継ぎ</h3><p>記録をファイルに保存し、新しい端末で読み込めます。アカウントやサーバーは不要です。</p><div class="backup-buttons"><button type="button" id="backupButton">↓ バックアップ</button><button type="button" id="restoreButton">↑ 復元</button></div><input type="file" id="restoreFile" accept=".json,application/json" hidden><p class="backup-note" id="backupMessage" aria-live="polite">復元すると、この端末の現在の記録が置き換わります。バックアップファイルは大切に保管してください。</p></div>');
     $('#nicknameInput').value=state.nickname||'ゲスト';
     $('#saveName').addEventListener('click',()=>{state.nickname=$('#nicknameInput').value.trim().slice(0,16)||'ゲスト';save();render();closeDialog();});
+    $('#backupButton').addEventListener('click',backupProgress);
+    $('#restoreButton').addEventListener('click',()=>$('#restoreFile').click());
+    $('#restoreFile').addEventListener('change',restoreProgress);
+  }
+  function backupProgress(){
+    try{
+      // 入力中のニックネームもバックアップに反映する。
+      const snapshot={...state,nickname:$('#nicknameInput').value.trim().slice(0,16)||'ゲスト'};
+      const payload={app:'yuruyuru-awamori-sort',formatVersion:1,exportedAt:new Date().toISOString(),state:snapshot};
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='awamori-sort-backup-'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      $('#backupMessage').textContent='バックアップを作成しました。iPhoneでは「ファイル」アプリ、Androidではダウンロード先などを確認してください。';
+    }catch(err){$('#backupMessage').textContent='保存できませんでした。ブラウザーのファイル保存権限を確認してください。';}
+  }
+  async function restoreProgress(event){
+    const input=event.target, file=input.files&&input.files[0];
+    input.value='';
+    if(!file)return;
+    const msg=$('#backupMessage');
+    if(file.size>2*1024*1024){msg.textContent='ファイルが大きすぎます（最大2MB）。';return;}
+    let data;
+    try{data=JSON.parse(await file.text());}
+    catch(_){msg.textContent='JSONファイルを読み取れませんでした。';return;}
+    if(!data||data.app!=='yuruyuru-awamori-sort'||data.formatVersion!==1||!data.state){msg.textContent='このゲームの対応バックアップファイルではありません。';return;}
+    const raw=data.state;
+    if(!Number.isInteger(raw.level)||raw.level<0||raw.level>=LEVELS.length||!Array.isArray(raw.cleared)||!Array.isArray(raw.medals)||!raw.best||typeof raw.best!=='object'||!Array.isArray(raw.board)||!validBoard(raw.board,raw.level)){
+      msg.textContent='保存データの形式が正しくありません。復元を中止しました。';return;
+    }
+    const restored=normalizeSave(raw,false);
+    const c=restored.cleared.length;
+    if(!confirm('バックアップの「'+restored.nickname+'」の記録（'+c+'ステージクリア）を復元しますか？\nこの端末の現在のプレイ記録は上書きされます。'))return;
+    try{
+      localStorage.setItem(STORE,JSON.stringify(restored));
+      if(localStorage.getItem(STORE)!==JSON.stringify(restored))throw Error('保存確認に失敗');
+    }catch(_){msg.textContent='端末に保存できませんでした。現在の記録は変更していません。';return;}
+    state=restored;syncSecret();save();selected=null;hinted=null;revealNewest=-1;
+    closeDialog();render();setStatus('バックアップからプレイ記録を復元しました。');
+    alert('復元しました。ステージ・ニックネーム・メダル・途中の盤面が引き継がれました。');
   }
   function secretHint(){openDialog('<span class="stamp">🔮</span><h2 id="dialogTitle">隠しステージ21のヒント</h2><p class="lead">20ステージをすべてクリアした勇者に、もう一つの挑戦が待っています。</p><div class="fact-reveal"><p>条件①：ステージ1～20をすべてクリアする。<br>条件②：ステージ20を<strong>'+RIVAL_GOALS[19]+'手以内</strong>でクリアして「ゆる泡くんメダル」を獲得する。<br>現在：'+(secretEligible()?'解放済み！':'まだ条件を満たしていません')+'</p></div><button class="primary" id="secretClose">閉じる</button>');$('#secretClose').addEventListener('click',closeDialog);}
   $('#profileButton').addEventListener('click',profile);
