@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b4853">
   <meta name="description" content="登録不要・インストール不要。ボトルのアイテムをそろえる泡盛文化の仕分けパズル。">
-  <title>泡盛ボトル仕分けパズル v3.2 | ゆるゆる泡盛 ラボ</title>
+  <title>泡盛ボトル仕分けパズル v3.3 | ゆるゆる泡盛 ラボ</title>
   <style>
     :root { color-scheme:light; --ink:#183c44; --muted:#66858b; --deep:#0b4853; --teal:#0b766e; --sand:#fff7e9; --paper:#fffefb; --line:#dce9e5; --coral:#f29e76; --shadow:0 16px 44px #0b485315; --radius:22px; }
     *,*::before,*::after{box-sizing:border-box}
@@ -209,6 +209,21 @@ button:not(.bottle):disabled{background:#e6e9e8!important;color:#71838a!importan
 /* Small viewports: keep 3 bottles across without shrinking the icons */
 @media(max-width:360px){.app{padding-left:8px;padding-right:8px}.game-card{padding-left:7px;padding-right:7px}.board{gap:14px 5px;max-width:100%}.bottle{flex-basis:calc((100% - 12px)/3);width:calc((100% - 12px)/3)}.glass{width:94%}.piece{width:42px;height:42px;flex-basis:42px}}
 @media(max-width:370px){.stage-grid{gap:5px}.stage-btn{padding-left:0;padding-right:0}}
+
+/* v3.3 visibility improvements */
+:root{--action-shadow:#a8dbd6}
+button:not(.bottle):not(:disabled){box-shadow:0 5px 0 var(--action-shadow),0 10px 13px #1b5d6230!important}
+button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow)!important}
+/* The heading is informational, never a control. */
+.hero{background:linear-gradient(120deg,#d9f3bb,#effad4 62%,#ccefa7);color:#254b2a;box-shadow:0 8px 22px #568c4a1a}
+.hero h1,.hero p{color:#244c2a}
+.hero .eyebrow{border-color:#86b275;color:#365d32;background:#ffffff80}
+.rival-badge.earned{background:#dff5af;color:#34551c;border:1px solid #a6ca6a}
+/* Completed bottles: soft pink interior, not an active control indication. */
+.bottle.full .glass{background:linear-gradient(100deg,#fff5f8 0%,#ffe4ee 52%,#ffd8e7 100%)}
+/* Keep selected red and enemy lock gold visible over completed color. */
+.bottle.selected .glass{border:5px solid #ec2333;box-shadow:0 0 0 5px #ec2333,0 8px 18px #ec233355}
+.bottle.enemy-locked .glass{outline:7px solid #e5b029;outline-offset:2px;box-shadow:0 0 0 10px #ffdf8e88}
 </style>
 </head>
 <body>
@@ -307,12 +322,12 @@ button:not(.bottle):disabled{background:#e6e9e8!important;color:#71838a!importan
     if(k%2===1)rotated.reverse();
     LEVELS.push({name:ADVANCED_NAMES[k],b:rotated.concat([[],[]])});
   });
-  // 後半の4面にもくろまい君ジョーカーを配置。
-  [14,16,18].forEach(i=>{
+  // 後半は12・14・15・16・17・18・19・20面にジョーカーを配置。
+  [11,13,14,15,16,17,18,19].forEach(i=>{
     const b=LEVELS[i].b;
     const target=b.find(a=>a.length===4);
     if(target)target[3]=WILD;
-    JOKER_LEVELS.push(i);
+    if(!JOKER_LEVELS.includes(i))JOKER_LEVELS.push(i);
   });
   // 21面は隠しステージ。20面と同型の可解盤面を使い、色と瓶の順番を変更する。
   const secretSource=LEVELS[19].b;
@@ -551,7 +566,7 @@ button:not(.bottle):disabled{background:#e6e9e8!important;color:#71838a!importan
     $('#nextStage').addEventListener('click',()=>{closeDialog();loadLevel(final?0:(index===19&&!secretEligible()?19:index+1));window.scrollTo({top:0,behavior:'smooth'});});
     $('#stayStage').addEventListener('click',closeDialog);
   }
-  function help(){openDialog('<span class="stamp">🧩</span><h2 id="dialogTitle">遊び方</h2><p class="lead">ボトルのマークを、種類ごとに仕分けよう！</p><ol class="help-list"><li><strong>中身のあるボトル</strong>をタップして選択。選択したボトルは赤枠で囲まれます。</li><li><strong>空のボトル</strong>、または<strong>同じマークが一番上にあるボトル</strong>をタップすると移動できます。</li><li>ボトルは<strong>1本につき4個</strong>まで。同じマークが連続していれば、まとめて移せます。</li><li>すべてのマークを種類ごとに揃えるとクリア。泡盛の豆知識が増えます。</li><li><strong>ステージ4・6・8・10</strong>は「★ くろまい君ジョーカー」が登場。どのマークの上にも置け、3個揃ったマークの不足分を補えます。ジョーカーは1個ずつ移動します。</li><li><strong>ステージ11～21</strong>はお邪魔くん登場！数手ごとにボトルを一時封印します。封印ボトルをタップすれば1手で解除できます。妨害の予告を見て攻略しましょう。</li><li><strong>ゆる泡くんの挑戦</strong>：目標手数以内でクリアするとメダル獲得。達成できなくても通常クリアできます。</li></ol><div class="fact-reveal"><p>「1手戻す」「やり直す」「ヒント」は自由に使えます。スコアと進捗はこの端末のブラウザー内に保存します。ジョーカーは「くろまい君」、挑戦とメダルは「ゆる泡くん」が担当します。</p></div><button class="primary" id="helpClose">遊んでみる</button>');$('#helpClose').addEventListener('click',closeDialog);}
+  function help(){openDialog('<span class="stamp">🧩</span><h2 id="dialogTitle">遊び方</h2><p class="lead">ボトルのマークを、種類ごとに仕分けよう！</p><ol class="help-list"><li><strong>中身のあるボトル</strong>をタップして選択。選択したボトルは赤枠で囲まれます。もう一度タップすると選択が解除されます。</li><li><strong>空のボトル</strong>、または<strong>同じマークが一番上にあるボトル</strong>をタップすると移動できます。</li><li>ボトルは<strong>1本につき4個</strong>まで。同じマークが連続していれば、まとめて移せます。</li><li>すべてのマークを種類ごとに揃えるとクリア。泡盛の豆知識が増えます。</li><li><strong>ステージ4・6・8・10・12・14・15・16・17・18・19・20</strong>は「★ くろまい君ジョーカー」が登場。どのマークの上にも置け、3個揃ったマークの不足分を補えます。ジョーカーは1個ずつ移動します。</li><li><strong>ステージ11～21</strong>はお邪魔くん登場！数手ごとにボトルを一時封印します。封印ボトルをタップすれば1手で解除できます。妨害の予告を見て攻略しましょう。</li><li><strong>ゆる泡くんの挑戦</strong>：目標手数以内でクリアするとメダル獲得。達成できなくても通常クリアできます。</li></ol><div class="fact-reveal"><p>「1手戻す」「やり直す」「ヒント」は自由に使えます。スコアと進捗はこの端末のブラウザー内に保存します。ジョーカーは「くろまい君」、挑戦とメダルは「ゆる泡くん」が担当します。</p></div><button class="primary" id="helpClose">遊んでみる</button>');$('#helpClose').addEventListener('click',closeDialog);}
   function collection(){const html=FACTS.map((f,i)=>{const unlocked=state.cleared.includes(i);return '<article class="collection-card'+(unlocked?'':' locked')+'"><h3>'+(unlocked?f.icon:'🔒')+' '+(i+1)+'. '+(unlocked?f.title:'？？？')+'</h3><p>'+(unlocked?f.desc:'ステージ'+(i+1)+'をクリアすると解放されます。')+'</p></article>';}).join('');openDialog('<span class="stamp">📖</span><h2 id="dialogTitle">あわもり豆知識図鑑</h2><p class="lead">'+state.cleared.length+' / '+FACTS.length+' 個の豆知識を発見！</p><div class="collection">'+html+'</div><button class="secondary" id="collectionClose" style="margin-top:15px">閉じる</button>');$('#collectionClose').addEventListener('click',closeDialog);}
   function profile(){
     const total=state.cleared.filter(i=>i<20).length;
