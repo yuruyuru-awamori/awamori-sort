@@ -257,6 +257,12 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
 .encyclopedia-progress{display:flex;align-items:center;gap:10px;margin-top:9px;font-size:13px;color:#365d32;font-weight:700;}
 .encyclopedia-progress-track{height:9px;background:#c7debf;border-radius:20px;overflow:hidden;flex:1;}
 #encyclopediaBar{height:100%;width:0;background:#3d9f76;border-radius:20px;transition:width .25s;}
+/* 移動先ボトルをタップした直後に約0.85秒間、暗色の枠で強調 */
+.bottle.destination-tapped .glass,
+.bottle.destination-tapped.full .glass{border:5px solid #26333c;box-shadow:0 0 0 5px #26333c,0 8px 18px #26333c55}
+.bottle.destination-tapped .neck{border-color:#26333c}
+/* お邪魔くんの施錠表示は従来どおり優先 */
+.bottle.destination-tapped.enemy-locked .glass{outline:7px solid #e5b029;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -483,6 +489,13 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
   let selected=null;
   let hinted=null;
   let revealNewest=-1;
+  let destinationHighlight=-1;
+  let destinationHighlightTimer=null;
+  function markDestination(i){
+    if(destinationHighlightTimer!==null)clearTimeout(destinationHighlightTimer);
+    destinationHighlight=i;
+    destinationHighlightTimer=setTimeout(()=>{destinationHighlight=-1;destinationHighlightTimer=null;render();},850);
+  }
   let toastTimer=null;
   let dialogAction=null;
   const overlay=$('#overlay');
@@ -539,6 +552,7 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
     state.board.forEach((chips,i)=>{
       const button=document.createElement('button');button.type='button';button.className='bottle';button.dataset.index=i;
       if(i===selected)button.classList.add('selected');
+      if(i===destinationHighlight)button.classList.add('destination-tapped');
       if(hinted&&hinted[0]===i)button.classList.add('hint-source');
       if(hinted&&hinted[1]===i)button.classList.add('hint-dest');
       if(chips.length===CAP&&new Set(chips.filter(v=>v!==WILD)).size<=1)button.classList.add('full');
@@ -605,10 +619,10 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
     }
     pushSnapshot();
     const next=applyMove(b,selected,i);state.board=next;state.moves++;state.lastPour=count;
-    selected=null;revealNewest=i;enemyAdvance();save();render();
+    selected=null;revealNewest=i;markDestination(i);enemyAdvance();save();render();
     if(solved(next)){win();}else{setStatus(count>1?count+'個まとめて移動！ 同じマークを揃えよう。':'いい調子！ 同じマークを揃えよう。');}
   }
-  function loadLevel(i){if(dailyMode)backNormal();if(i>=state.unlocked)return;state.level=i;state.board=clone(LEVELS[i].b);state.moves=0;state.history=[];state.lastPour=0;state.lockIndex=-1;state.lockRemaining=0;state.enemyTick=0;selected=null;clearHint();setStatus(i>=10?'👻 お邪魔くん登場！ 次の妨害までの手数に注目！':JOKER_LEVELS.includes(i)?'★ くろまい君ジョーカー登場！足りないマークに活用しよう。':'移動させたいボトルをタップ！');save();render();}
+  function loadLevel(i){destinationHighlight=-1;if(destinationHighlightTimer!==null){clearTimeout(destinationHighlightTimer);destinationHighlightTimer=null;}if(dailyMode)backNormal();if(i>=state.unlocked)return;state.level=i;state.board=clone(LEVELS[i].b);state.moves=0;state.history=[];state.lastPour=0;state.lockIndex=-1;state.lockRemaining=0;state.enemyTick=0;selected=null;clearHint();setStatus(i>=10?'👻 お邪魔くん登場！ 次の妨害までの手数に注目！':JOKER_LEVELS.includes(i)?'★ くろまい君ジョーカー登場！足りないマークに活用しよう。':'移動させたいボトルをタップ！');save();render();}
   function undo(){if(!state.history.length)return;const prev=state.history.pop();if(Array.isArray(prev)){state.board=prev;state.lockIndex=-1;state.lockRemaining=0;}else{state.board=prev.board;state.lockIndex=prev.lockIndex;state.lockRemaining=prev.lockRemaining;state.enemyTick=prev.enemyTick;}state.moves=Math.max(0,state.moves-1);selected=null;clearHint();setStatus('1手戻しました。');save();render();}
   function reset(){if(!state.moves&&!state.history.length){setStatus('このステージは最初の状態です。');return;}loadLevel(state.level);setStatus('最初からやり直します。');}
   // 空のボトル同士を同一視する幅優先探索。ヒントには最短手数の解の初手を使用。
