@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>泡盛ボトル仕分けパズル｜テスト記録削除</title>
+<style>*,*:before,*:after{box-sizing:border-box}body{margin:0;background:#ecf7f4;color:#15484b;font-family:system-ui,-apple-system,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;line-height:1.7}.wrap{max-width:600px;margin:32px auto;padding:20px}.card{background:white;border:1px solid #bddbd2;border-radius:20px;padding:24px;box-shadow:0 8px 25px #14545216}h1{font-size:1.5rem;margin:0 0 15px}p{margin:8px 0 15px}.notice{background:#fff5e3;border:1px solid #efcd95;border-radius:12px;padding:12px}.keys{background:#f3f8f6;padding:12px;border-radius:12px;margin:14px 0;overflow-wrap:anywhere}code{font-size:.88rem}ul{padding-left:22px}label{display:block;font-weight:700;margin-top:14px}input{width:100%;font-size:1.1rem;padding:12px;border:2px solid #86bbb2;border-radius:10px}button{width:100%;background:#116e75;border:0;color:white;border-radius:12px;box-shadow:0 5px 0 #9bd3d0;font-size:1.1rem;font-weight:800;min-height:55px;margin:15px 0;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}#result{white-space:pre-wrap;font-weight:700}small{color:#456d70}</style></head>
+<body><main class="wrap"><div class="card"><h1>テスト用：プレイ記録の削除</h1><p class="notice"><strong>注意：</strong>この操作を実行すると、このオリジンに保存された「泡盛ボトル仕分けパズル」の対象データ（layoutID 1.0 の記録を含む）が削除されます。元に戻すには、事前のバックアップが必要です。</p>
+<p>現在の保存場所：<code id="origin"></code></p><p><strong>削除対象の4キー（最新版 layoutID 1.0 対応）</strong>（他アプリのデータは削除しません）</p><div class="keys" id="keys"></div>
+<p><strong>削除前の確認</strong>：必要なプレイ記録をJSONでバックアップしてください。</p><label for="confirm">実行する場合は「削除」と入力</label><input id="confirm" autocomplete="off" placeholder="削除"><button id="erase" disabled>対象のプレイ記録を削除</button><p id="result" role="status" aria-live="polite"></p>
+<small>GitHub Pagesのゲームを消す場合、このHTMLをゲームと同じGitHub Pagesサイトに <code>reset-localstorage.html</code> としてアップロードし、その公開URLから開いてください。ローカルで直接開くと、公開サイトのデータは削除できません。</small></div></main>
+<script>
+(()=>{'use strict';
+const LID='1.0';
+const keys=['awamori-bottle-sort-v2','awamori-bottle-sort-v1','awamori-sort-daily-session-v4','awamori-sort-daily-record-v4'];
+const $=id=>document.getElementById(id);$('origin').textContent=location.protocol==='file:'?'ローカルファイル（公開サイトとは別）':location.origin;
+function refresh(){try{$('keys').innerHTML=keys.map(k=>'<div><code>'+k+'</code> ：'+(localStorage.getItem(k)!==null?'保存あり':'保存なし')+'</div>').join('');}catch(e){$('keys').textContent='localStorageにアクセスできません：'+e.message;$('erase').disabled=true;}}
+if(location.protocol==='file:'){$('result').textContent='注意：ローカルファイルとして開いています。GitHub Pagesに保存されたゲーム記録は削除できません。';}
+$('confirm').addEventListener('input',()=>{$('erase').disabled=$('confirm').value!=='削除'});
+$('erase').addEventListener('click',()=>{if($('confirm').value!=='削除')return;if(location.protocol==='file:'){ $('result').textContent='公開済みのゲーム記録を削除するには、GitHub Pages上から開いてください。';return;}if(!window.confirm('このサイトの泡盛ボトル仕分けパズルの保存データを削除します。よろしいですか？'))return;
+try{let deleted=0;for(const key of keys){if(localStorage.getItem(key)!==null)deleted++;localStorage.removeItem(key)}$('result').textContent='削除処理が完了しました（保存されていたキー：'+deleted+'件）。ゲームを再読み込みすると初期状態になります。';}catch(e){$('result').textContent='削除中にエラーが発生しました：'+e.message;}$('confirm').value='';$('erase').disabled=true;refresh();});refresh();
+})();
+</script></body></html>
