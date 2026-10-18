@@ -300,10 +300,6 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
 <div class="panel-heading"><h2>🏝️ ステージを選ぶ</h2><span style="font-size:11px;color:#7f9294">クリアすると解放</span></div>
 <div class="profile-card"><div class="profile-top"><strong id="playerName">プレイヤー：ゲスト</strong><button id="profileButton" type="button">✎ ステータス・名前</button></div><div class="profile-stats"><div><strong id="profileClears">0/20</strong><small>通常クリア</small></div><div><strong id="profileMedals">0</strong><small>メダル獲得</small></div><div><strong id="profileBest">—</strong><small>20面ベスト手数</small></div></div></div><div class="stage-grid" id="stageGrid"></div><section class="daily-section" id="dailySection"><h2>📅 今日の泡盛チャレンジ</h2><p id="dailyDate"></p><p id="dailyOverview">スペシャルステージ21をクリアすると解放されます。</p><div class="daily-grid" id="dailyGrid"></div><p id="dailyRankText"></p><button hidden="" id="normalModeButton" type="button">通常ステージへ戻る</button></section><div class="secret-hint">🔮 スペシャルステージ「？」が待っている！ <button class="secret-hint-btn" id="secretHintButton" type="button">解放条件のヒント</button></div>
 </section>
-<section class="panel">
-<div class="panel-heading"><h2>📖 あわもり豆知識図鑑</h2><button id="collectionButton" type="button">📖 図鑑を開く</button></div>
-<div class="fact-box"><div class="fact-icon" id="factIcon">🔒</div><div class="fact-copy"><strong id="factTitle">まだ秘密です</strong><p id="factDescription">ステージをクリアすると、泡盛にまつわる豆知識が解放されます。</p></div></div>
-</section>
 </div>
 <footer class="footer">このゲームは沖縄の泡盛文化を題材とした学習・娯楽用コンテンツです。飲酒を勧めるものではありません。<br/>プレイ記録はこのブラウザー内に保存されます。外部送信は行いません。</footer>
 </div>
@@ -580,10 +576,6 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
       b.setAttribute('aria-label','ステージ'+(i+1)+(i>=normalState.unlocked?'・未解放':normalState.cleared.includes(i)?'・クリア済み':''));
       b.addEventListener('click',()=>loadLevel(i));$('#stageGrid').appendChild(b);
     });
-    const found=normalState.cleared.length?Math.max(...normalState.cleared):-1;
-    $('#factIcon').textContent=found>=0?FACTS[found].icon:'🔒';
-    $('#factTitle').textContent=found>=0?FACTS[found].title:'まだ秘密です';
-    $('#factDescription').textContent=found>=0?FACTS[found].desc:'ステージをクリアすると、泡盛にまつわる豆知識が解放されます。';
     revealNewest=-1;renderDailyPanel();
     const factRead=new Set(normalState.readFacts||[]);
     const factUnlocked=normalState.cleared.filter(i=>i>=0&&i<FACTS.length);
@@ -741,7 +733,6 @@ button:not(.bottle):not(:disabled):active{box-shadow:0 2px 0 var(--action-shadow
   $('#profileButton').addEventListener('click',profile);
   $('#secretHintButton').addEventListener('click',secretHint);
   $('#helpButton').addEventListener('click',help);
-  $('#collectionButton').addEventListener('click',collection);
   $('#collectionTopButton').addEventListener('click',collection);
   $('#undoButton').addEventListener('click',undo);
   $('#resetButton').addEventListener('click',reset);
